@@ -1,0 +1,120 @@
+
+//memory mismanagement:
+
+vector <int*> mem1() //QUESTION
+{
+  vector <int*> v;
+  v.push_back (new int()); //new = heap, local = stack;
+  int x = 10; //stack
+  v.push_back (&x); //stored a pointer to local variable and to heap memory
+  return v;
+}
+
+int& mem2()
+{
+  int x;
+  return x;
+} //reference to vairable that does not exist, or ptr
+
+string: lower cases are bigger than upper cases by default
+
+
+Assignment operator:
+Foo& operator= (const Foo* f)
+{
+  if (*this != f)
+      Foo temp (f);
+      //trade states
+      //temp dies
+}
+//inefficient code - fails to interact with copy eliding
+//have to use try catch again - premature optimization of an edge case
+
+//primitive type and standard class will accept parentheses:
+string();
+std::vector<int> ();
+no parenthese for actual variable
+
+//memory leak:
+calling new without calling delete
+new and delete mismatched
+
+
+void some_function ()
+{
+  int* p = new int [2017];
+  delete[] p; //not delete p
+}
+
+delete statement not reached
+losing sight of heap memory
+premature use of delete
+returning a local object
+delete before new
+double deletion: undefined behavior, crash
+
+
+//copy constructor for policy:
+class Baz
+{
+  int* x;
+  Baz::Baz (const Baz& b) 
+  {
+    x = nullptr;
+    try
+    {
+      x = new int[24];
+      for (int i = 0; i < 24; i++)
+        x[i] = b.x[i];
+    }
+    catch (std::exception e)
+    {
+      delete[] x;
+      x = nullptr;
+      throw; //throw again because we have not fixed anything
+    } 
+  }
+};
+
+Fizz Fizz::operator= (Fizz f)
+{
+  this->swap(f);
+  return (*this);
+}
+
+void Fizz::swap (Fizz& f)
+{
+  std::swap (*this, f);
+} 
+infinite loop: swap calls assignment operator, which then calls swap
+
+
+void MyVector::swap (MyVector& other)
+{
+  std::swap (this->m_data, other.m_data);
+  std::swap (this->size, other.size);
+  std::swap (this->cap, other.cap);
+} //efficient swap: only changes the pointer, does not allocate new memory
+//swapping the actual copies, not performing any copies
+
+//overloading swap function:
+void swap (MyVector& x, MyVector& y)
+{
+  x.swap(y); //templated; has priority, check for self-assignment
+  return;
+} //non-member swap that overrides std::swap if parameters are of type MyVector
+//adds extra insurance (correctly calls swap)
+
+
+/*
+To conclude this [rather long] write-up let us double check that, extra copies aside, the Copy-and-Swap idiom does indeed compare to other approach mentioned in the previous section.
+The self-assignment check is not used because it is no longer needed and in most cases the compiler makes sure no extra copies are made.
+The deep-copy part is handled by a combination of a working, exception-safe, copy constructor, as well as an appropriate swap function.
+Both approaches return the implicit object.
+The data previously stored in the implicit object is released by the class destructor. This is because after swapping the class fields, the local clone object is the owner of the no-longer-needed heap memory. When the assignment operator finishes execution, clone is safely destroyed releasing the heap memory previously assigned to the implicit object.
+
+*/
+
+using namespace std; //can crash 
+//infinite recursion
+
