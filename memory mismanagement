@@ -118,3 +118,74 @@ The data previously stored in the implicit object is released by the class destr
 using namespace std; //can crash 
 //infinite recursion
 
+copy eliding:
+- the compiler can pass arguments directly into functions instead of constructing
+- temporary objects get passed directly in
+
+explain how the move constructor and copy-and-swap idiom interact with each other?
+if you implement both copy-and-swap and r-value function, the compiler will not know what to use.
+option of creating a copy or move constructor to enter into a function call
+third option: compiler passing in the object directly - copmiler figuring out you do not need to do both above
+
+move semanatics:
+move constructor
+taking things by value instead of by value
+
+return value optimization:
+  if you know where your ojbect is suppoed to go, build it there
+  foo f = return_a_foo();
+  foo_return_a_foo()
+  {
+    return foo (S); //nameless variable
+  } //instead of creating a copy of this object out of scope, the foo is constructed at the destination instead
+  destination is known at compiler time; compiler detects destination, and performs operations necessary
+  
+  
+  
+  
+name return value optimization:
+  foo return_by_NRVO()
+  {
+    foo f; //finds return location and performs all operations
+    //do stuff for f
+    return f; 
+  } //as if we passed a pointer to destination
+  NRVO optimization has an issue: you do not know which branch of something is going to fire off
+  
+  foo oops()
+  {
+    int x = rand() % 2;
+    foo f;
+    foo g;
+    if (x)
+      return f;
+    else
+      return g;
+  }
+  canont generate 
+  name object = we have to translate all these operations outside
+  branch of code that is not determinable at compiler time
+  we do not know whether we are going to work with f or g
+  do not know the route in which destination is going to be (not known at compiler time)
+  will not get optimization
+  do not put branches in your code
+  if statement outside and call your specialized function inside instead of single function
+  
+
+
+value category:
+whether it goes through r-value or l-value reference
+
+
+
+
+
+
+
+
+
+
+
+
+
+
