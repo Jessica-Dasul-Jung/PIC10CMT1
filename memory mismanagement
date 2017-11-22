@@ -177,6 +177,42 @@ value category:
 whether it goes through r-value or l-value reference
 
 
+Lecture: Iterator
+
+template <class Iterator?
+int generic_sum (Iterator first, Iterator last){
+  int sum = 0;
+  while (first != last)
+    sum += *first++;
+  return sum;
+}
+
+special category: (Insertor)
+[output]
+*iter <-> push_from (*iter)
+*iter = new_value;
+//value = *iter;
+value = push_back();
+
+insertor: allows you to output things but it does not know how to read
+
+Random Access:
+- Bidirectional
+  - Forward (if not const iterator)
+    - input
+      - ==, !=, ++iter, iter++, * (dereference)
+    - output
+  - save and recycle 
+- --iter; iter--
+
+*iter++
+*old_value = *new_value
+
+iterators are expected to be some nested thing associated with the container
+  typedef PlayerList::iterator iterator;
+
+for vector:
+just modify the function you return memory address of the first element and last + 1 element
 
 
 
