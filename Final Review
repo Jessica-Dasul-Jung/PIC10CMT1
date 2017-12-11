@@ -6,7 +6,7 @@ bind function:
 std::bind
   #include <functional>
   using namespace std::placeholder;
-  generates a forwarding call wrapper for f = invoking f with some of its argumetns bound to arg
+  generates a forwarding call wrapper for f = invoking f with some of its arguments bound to arg
   
   parameters:
   fn = callable object (function object, pointer to function, reference to function, pointer to member function, 
@@ -71,11 +71,43 @@ std::bind
     int n3 = 4;
     
     auto f = bind(add3ints, n1, n2, n3);
-    f(); 
+    f(); //returns n1 + n2 + n3
     
-    bind (add3Ints, 1, 10, 100)();
+    bind (add3Ints, 1, 10, 100)(); //returns 1 + 10 + 100
+    
+    bind(modify2ndAnd3rd, n3, n2, n1)(); //does not change anything
+    bind(modify2ndAnd3rd, n3, n2, ref(n1))(); //modifies n1 only (not n2)
+    
+    WRONG: bind(writeToOutputStream,cout,123)(); // <-- Oops!
+    bind(writeToOutputStream, ref(cout), 123)(); // OK!
+    
+    bind(add3Ints, n1, _5, _2)(1, n3, 10, 100, n2); //n1 + n2(_5) + n3
+    bind(add3Ints, _1, _1, _1)(n2); // n2 + n2 + n2
+    WRONG: bind(modify2ndAnd3rd, _3, _2, _1)(10,n3,n1);   // Oops! 10 cannot change 
+    WRONG: bind(modify2ndAnd3rd, _3, _2, _1)(n2,n1+n2,1); // Oops again!
+    bind(modify2ndAnd3rd, _3, _2, _1)(n2, n3, n1); //n3 and n1 modified
+      //placeholders pass in by &
+    
+    bind(add3Ints, _1, _2, _3)(n3, n2, n1); //_1 = n3, _2 = n2, _3 = n1
+    bind(modify2ndAnd3rd, _1, _2, _3)(1 + n1, n2, n3);  // n2 and n3 modified, _1 (n1)
+    //not passed by reference so it's okay
     
     
+    vector<int> int_vec = { 20, 21, 26, 18, 16 };
+	  vector<int> w;
+	  transform(int_vec.begin(), int_vec.end(), back_inserter(w), bind(add3Ints, -10, -5, _1));
+    
+    
+    
+    
+    
+    
+
+    
+    
+
+
+
     
     
     
