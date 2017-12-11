@@ -1,0 +1,196 @@
+they perform a task that is typically very associated to loops
+they work in standard containers
+
+
+Accessor: (non-mutating algorithm)
+1. find
+  InputIterator find (InputIterator begin, InputIterator end, const T& value);
+  auto last = v.end();
+  auto iter = find( v.begin(), last, wantedValue );
+  while ( iter != last ){
+    ++iter;
+    cout << "Found it [again?]!";
+    iter = find( iter, last, wantedValue ); 
+}
+
+2. find_if
+  InputIterator find( InputIterator begin, InputIterator end, Predicate pred );
+  
+  Function object:
+    any instance of a class that overloads operator()
+  Predicates: instances of class that overloads bool operator() (predicate function)
+  
+  the following code finds the first occurrence of an odd number.
+  class IsOdd{
+      public:
+          operator()(int n) const { return ( n%2 != 0 ); }
+  } oddFinder;
+
+  auto last = v.end();
+  auto iter = find_if( v.begin(), last, oddFinder );
+  while ( iter != last ){
+      cout << "Found an odd number [again?]!";
+      iter = find( ++iter, last, oddFinder ); 
+  }
+
+3. count and count_if
+  count occurrences of either a value that can be extracted via a predicate function.
+size_t count( InputIterator begin, InputIterator end, const T& value );
+
+size_t count_if( InputIterator begin, InputIterator end, Predicate pred );
+int oddCount = count_if( v.begin(), v.end(), oddFinder );
+
+Topic: Numeric algorithms
+  work with both containers of numbers and function objects  
+
+1. max_element and min_element
+  find the maximum/minimum elements in a given range. 
+  single pass algorithm, but InputIterator cannot be used, because the actual max/min value needs
+  to be stored in the iterator that is returned by these functions.
+  
+  ForwardIterator max_element( ForwardIterator begin, ForwardIterator end );
+  ForwardIterator max_element( ForwardIterator begin, ForwardIterator end, Compare cmp );
+    min_element similar
+
+  predicate cmp: two parameters
+    true if second param is bigger than the first one
+
+  Ex)
+  class CMP {
+      public:
+      bool operator() (int currentMax, int n) { return ( (n % 2) == 1 ) && ( n > currentMax ); }
+  };
+
+  SomeContainer data;
+  //auto iter = max_element(data.begin(),data.end(),CMP); // Oops!
+  auto iter = max_element(data.begin(),data.end(),CMP()); // OK.
+  if ( iter != data.end() )
+    cout << "The 'maximum' is " <<  *iter << ".";
+
+2. accumulate
+  adds up the values in a given range
+  Ex)
+  T accumulate( InputIterator begin, InputIterator end, T initialValue 
+    [, BinaryOperation op] ); // <-- Optional
+BinaryOperation overloads operator() with two parameters. 
+  1st param: accumulated value
+  2nd param: value to be added to the accumulated one
+
+cout << accumulate( v.begin(), v.end(), 0 ) << "."; //v = ints
+
+cout << "The product of all values in 'v' is: "
+     << accumulate( v.begin(), v.end(), 1, std::multiplies<int>() ) << ".";
+
+What does the following snippet do?
+class Mystery{
+    public:
+       double operator()(double sum, double x) const { 
+           return x > 0 ? sum + x : sum ;
+       }
+} mysteryOp;
+
+SomeContainer v;
+// ...
+
+cout << "The mystery accumulated value is: " 
+     << accumulate( v.begin(), v.end(), 0, misteryOp ) // no parenthesis?
+     << ".";
+
+Topic: Copying algorithms
+Copy ranges of elements from one container to another one. They can also be used with predicate objects.
+OutputIterator copy( InputIterator begin1, InputIterator end1,
+                     OutputIterator begin2 );
+
+OutputIterator remove_copy( InputIterator begin1,
+                            InputIterator end1,
+                            OutputIterator begin2, 
+                            const T& value );
+
+OutputIterator remove_copy_if( InputIterator begin1,
+                               InputIterator end1,
+                               OutputIterator begin2, 
+                               Predicate pred );
+
+OutputIterator transform( InputIterator begin1, 
+                          InputIterator end1,
+                          OutputIterator begin2,
+                          UnaryOperation op);
+copy copies the elements in [begin1,end1) to the output iterator given. remove_copy only copies values that are different value passes as the last parameter. remove_copy_if is the same as remove_copy except that it doesn't copy values that satisfy the predicate [i.e., those for which the return value is true]. Finally, transform performs the same task as copy except that it applies the given operation op to each element before storing the result.
+Note(s):
+There is no copy_if. Turns out it was accidentally left out.
+
+Use remove_copy_if with a predicate that does the opposite of what you want.
+If you truly need a copy_if function, you can code an equivalent one. For example, you can use the following
+  template<typename IN, typename OUT, typename PRED>
+  OUT copy_if( IN begin, IN end, OUT dest, PRED p ){
+      while ( begin != end ){
+          if ( p(*begin) ){ 
+              *dest = *begin;
+              ++dest;
+          }
+          ++begin;
+      }
+      return dest;
+  }
+Question:
+What types of iterators are requiered here?
+If you are wondering what happens to the container associated to begin2, the answer is that it depends on what type of iterator it is. If it is a normal iterator, then the elements being copied replace the elements in the output container. In this case, issues are likely to appear if there is not enough room in the output container. On the other hand, if the iterator is an insert iterator, the elements being copied are instead inserted into the container and there are no issues even if the receiving container is empty.
+Sorting algorithms
+There are several sorting algorithms defined in the STL library. Let us look at some of them.
+sort
+This algorithm sorts a range of elements. The c++ 11 standard does not require a specific algorithm, it only species that the sorting is completed in approximately $n\log n$ steps. In other words, this algorithm will favor speed over stability (i.e., relative order of equal elements is preserved after the sorting algorithm is applied).
+As it is the case with other generic algorithms, sort provides a way to alter the order by allowing a comparator to be passed as a parameter.
+void sort( RandomAccessIterator begin,
+           RandomAccessIterator end
+           [, Compare cmp] );
+To sort in increasing order use a statement like this: sort( v.begin(), v.end() ).
+If stability is to be favored instead, the algorithm stable_sort can be used. The set of parameters that it can receive is similar to the ones described above.
+partial_sort
+Sometimes, completely sorting a range of values is not really needed. For example, in a typical grading scheme the lowest 2 or 3 homework grades will not count towards the computation of a final grade. In this case the function partial_sort can be used.
+void partial_sort( RandomAccessIterator begin,
+                   RandomAccessIterator middle,
+                   RandomAccessIterator end
+                   [, Compare cmp] );
+In our described scenario the snippet
+auto v = returnVectorWithAtLeast5Values();
+partial_sort( v.begin(), v.begin() + 3 , v.end() );
+cout << "Average: "  
+     << accumulate( v.begin() + 4, v.end(), 0 ) / (v.size() - 3.0);
+would do the trick.
+Final remarks
+Alhough it seems that generic algorithms are useful, their power is increased when they are used in conjunction with lambda functions (more on this later). To illustrate the point, consider the case where we need to print the elements of a container (say a vector) to the console using the generic algorithm for_each. In this case, we need a helper function and/or functor to handle the indiviual elements. Before the C++11 standards were fully supported the easiest way to handle this track was to
+i. scroll to the top of the document to declare the helper; i. then define the body somewhere in the document; and finally i. write an elegant line of code back where it was needed.
+For example, assuming v is a vector of printable types, we could code
+// Libraries and precompiler directives
+...
+
+// Definitions
+template <typename ItemType>         // assume ItemType can be 'printed'
+void print_it( const ItemType& x );
+...
+
+// Declarations (optional)
+template <typename ItemType> 
+void print_it( const ItemType& x ){
+    std::cout << x << ' ';
+}
+
+    ...
+    // Here we print the `int` vector ...
+    for_each( v.begin(), v.end(), print_it );
+    ...
+Whoa! That is a lot of code needed to be able to write the elegant for_each statement. However, if we want to use a separator other than a blank space, we have to scroll up and/or down, and then change the code. Truth is, some programmers would rather write custom loops than being subject to this nighmare. Lucky for us, a lambda function does the same without all the extra code:
+    ...
+    // Here we print the `int` vector
+    for_each( v.begin(), v.end(), []( int x ){ std::cout << x << ' '; } );
+    ...
+If for some reason we need to change the separator, we can do it in-place. Nice!
+Just remember, if you are using generic algorithms without lambda functions, very likely you are not taking full advantage of the standard template library.
+Included f
+  
+d
+d
+d
+d
+
+d
