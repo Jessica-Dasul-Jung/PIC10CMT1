@@ -1,0 +1,27 @@
+
+lambda function:
+  defines an anonymous function objcet
+
+[]() {}(); //simple example
+
+
+[]  // The 'lambda introducer' (it specifies the type of 'capture')
+()  // The 'lambda declarator' (it is used to declare the parameters)
+{}  // The body of the function (it [usually] does not require a return)
+()  // Acts like a call to operator() 
+
+	int n = 10;
+	double x;
+	auto fun = [=, &x](double d, int k) {
+		cout << "d = " << (x = d) << ", k = " << k << '\n';
+		return x += d;
+	};
+
+	fun(0, n);
+	cout << "x = " << x << '\n';
+
+d
+d
+d
+d
+d
