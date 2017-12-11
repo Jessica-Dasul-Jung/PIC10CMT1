@@ -94,31 +94,155 @@ std::bind
     
     
     vector<int> int_vec = { 20, 21, 26, 18, 16 };
-	  vector<int> w;
-	  transform(int_vec.begin(), int_vec.end(), back_inserter(w), bind(add3Ints, -10, -5, _1));
+    vector<int> w;
+    transform(int_vec.begin(), int_vec.end(), back_inserter(w), bind(add3Ints, -10, -5, _1));
+    //-10 and -5 are added to every element/ ex) 20 becomes 5
+    //int_vec becomes {5, 6, 11, 3, 1, 1}
     
+    for_each(w.begin(), w.end(),bind(modify2ndAnd3rd, _1, _1, _1));
+    //w becomes 30 36 66 18 6
+    //each element get modified twice: *3, *2
     
-    
-    
-    
-    
-
-    
-    
-
-
-
-    
-    
-    
-  
-  
-  
-  
-  
-  
-  
   }
+  
+class Cosa {
+private: int id;
+public:
+	Cosa(int i = 0) : id(i) {}
+	// const member function
+	void print() const { cout << "Cosa " << id << ".\n"; } //const member function
+	
+	void to_stream(ostream& out) const { // Write to a supplied ostream
+		out << "Cosa" << id << " written to stream.\n"; }
+
+	void print_1_arg(int j) const; 	// const member function with one argument
+	void print_2_arg(int j, int k) const; // const member function with two arguments
+	
+	//modifying functions:
+	void update() { id++; } //modifying function with no args
+	void set_value(int i);
+	int get_value() const;
+};
+
+// Overload of operator<< 
+ostream& operator<<(ostream& out, const Cosa& c) {
+	out << "Cosa: " << c.get_value();
+	return out;}
+
+// Non-member functions similar to the members above.
+// These functions DO NOT modify the parameters.
+void print_Cosa(Cosa c) {
+	c.print(); }
+
+void print_Cosa_const_ref(const Cosa& c) {
+	c.print(); }
+
+void print_int_Cosa(int i, Cosa c) {
+	cout << "print_int_Cosa: " << i << ", " << c << ".\n"; }
+
+void print_Cosa_int(Cosa c, int i) {
+	cout << "print_Cosa_int: " << c << ", " << i << ".\n"; }
+
+void print_Cosa_int_int(Cosa c, int i, int j) {
+	cout << "print_Cosa_int_int: " << c << ", " << i << ", " << j << ".\n";}
+
+// Non-member functions similar to the members above.
+// These functions DO modify the parameters.
+void update_Cosa(Cosa& c) {
+	c.update(); }
+
+void set_Cosa(Cosa& c, int i) {
+	c.set_value(i);}
+
+int main() {
+	int n1 = 21;
+	int n2 = 32;
+	Cosa c1(1), c2(2), c3(3);
+
+	typedef vector<Cosa> Cosa_list_t;
+	Cosa_list_t listOfCosas = { c1, c2, c3 };
+
+	// We can use algorithms (e.g., `for_each`) to apply non-member and
+	// member functions to each Object in a container.
+
+	// Non-members that DO NOT modify contents
+	for_each(listOfCosas.begin(), listOfCosas.end(), bind(print_Cosa, _1));
+	//print Cosa 1 Cosa 2 Cosa 3
+	
+	// Non-members that DO modify contents
+	for_each(listOfCosas.begin(), listOfCosas.end(), bind(update_Cosa, _1));
+	//Cosa 1 updated to 2, Cosa 2 updated to 3, Cosa 3 updated to 4
+
+	// Members that DO NOT modify contents
+	for_each(listOfCosas.begin(), listOfCosas.end(), bind(&Cosa::print, _1)); //need address?
+	//Cosa written to stream, Cosa written to Stream, Cosa(num) written to Stream
+	
+	for_each(listOfCosas.begin(), listOfCosas.end(), bind(&Cosa::to_stream, _1, ref(cout)));
+	//Cosa written to stream, Cosa written to Stream, Cosa(num) written to Stream
+
+	for_each(listOfCosas.begin(), listOfCosas.end(), bind(&Cosa::print_1_arg, _1, n2));
+	//Cosa 21 with argument 32
+
+	// Members that DO modify contents
+	for_each(listOfCosas.begin(), listOfCosas.end(), bind(&Cosa::update, _1));
+	//Cosa updated to 22 (x3)
+
+	container of pointers:
+	bind is smart enough to adjust its behavior without changing the calls
+
+	typedef vector<Cosa*> Cosa_ptr_list_t;
+	Cosa_ptr_list_t listOfCosaPtrs = { &c1, &c2, &c3 };
+
+	for_each(listOfCosaPtrs.begin(), listOfCosaPtrs.end(), bind(&Cosa::print, _1));
+		//Cosa 1, Cosa 2, Cosa 3
+		
+	for_each(listOfCosaPtrs.begin(), listOfCosaPtrs.end(), bind(&Cosa::to_stream, _1, ref(cout)));
+		//Cosa1 written to stream. Cosa2 written to stream. Cosa3 written to stream.
+	for_each(listOfCosaPtrs.begin(), listOfCosaPtrs.end(), bind(&Cosa::print_1_arg, _1, n2));
+
+	for_each(listOfCosaPtrs.begin(), listOfCosaPtrs.end(), bind(&Cosa::update, _1));
+	//Cosa updated to 2, Cosa updated to 3, Cosa updated to 4
+	
+	
+//Cosa object = bound argument or call argument
+	bind(print_Cosa, c1)(); //print Cosa 1
+	bind(print_Cosa_const_ref, c1)(); // print Cosa 1
+	bind(print_Cosa_int, c1, n1)();
+	bind(print_Cosa, _1)(c1); //print Cosa1
+	bind(print_Cosa_const_ref, _1)(c1); //print Cosa1
+	bind(print_Cosa_int, _1, _2)(c1, n1);
+
+//Modifies:
+	bind(update_Cosa, c1)();          // modifies copy of c1 - no change
+	bind(update_Cosa, ref(c1))();     // modifies original c1 - change 
+	bind(update_Cosa, _1)(c1);        // modifies original c1 - placeholder updates cosa
+
+	bind(set_Cosa, c1, n3)();         // modifies copy of c1 - no change
+	bind(set_Cosa, ref(c1), n2)();    // modifies original c1 - yes change
+	bind(set_Cosa, _1, n1)(c1);       // modifies original c1
+
+//can call member functions of Cosa object:
+bind can figure out that a pointer to a member function is involved
+we need & to explicitly request the memory address of the member function
+	bind(&Cosa::print, c1)(); //print Cosa 1
+	bind(&Cosa::print, _1)(c1); //print Cosa 1
+	bind(&Cosa::to_stream, _1, ref(cout))(c1); //print Cosa1 written to stream
+	bind(&Cosa::print_1_arg, _1, _2)(c1, n2); 
+	bind(&Cosa::print_2_arg, _1, _2, _3)(c1, n2, n3); 
+	
+	bind(&Cosa::update, _1)(c1);           // modifies original c1 - updated
+	bind(&Cosa::set_value, _1, n1)(c1);    // modifies original c1
+	bind(&Cosa::update, c1)();             // modifies copy of c1
+	bind(&Cosa::update, ref(c1))();        // modifies original c1
+
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
   
   
   
