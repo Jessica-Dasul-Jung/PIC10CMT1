@@ -1,0 +1,115 @@
+GOOVER:
+lambda function
+generic algorithm
+  iterators: iterator types, valid operations
+4 pointer types
+QT
+  Q_OBJECT, MACRO
+  connect
+  scope basic resolve management
+RAII:
+  copy and swap
+  try catch in constructor
+  virtual destructor
+
+Lambda function:
+  auto func = [capture] ()-> return_type { function_body }
+  [a, &b] //a is capturing by const value - getting a copy, &b is by reference
+  
+  int x, int y;
+  auto func = [x, &y] (int z) {
+  }
+  
+  class xyz {
+    private: const int x;
+      int& y;
+    public:
+      xyz (int x, int y): x(x), y(y) {}
+      int operator() (int z) { ++y; return x + y + z; }
+  };
+  
+  for_each (v.begin(), v.end() [](int x) {std::cout << x << std::endl; };
+    //prints out every element in a container
+  
+list of generic algorithms:
+  Q: using no for loops, write code that generate a uniform grid of n elements between a and b:
+    std::vectoe <double> r (n, a);
+    a, a + delta, ... a + (n - 1)delta
+    a + (n - 1)delta = b
+    double delta = (b - a)/(n - 1);
+    we need an index = starts at zero, capture it by reference
+    auto func = [&index ,delta] (double& val) { val = val->(index*delta); }
+    for_each (v.begin(), v.end(), func);
+  
+
+shared pointer: (code repo)
+  demonstrates the cycle problem - two objects pointing at the same object
+  spawning shared pointer from (this) <- self-referential prointer
+  an implementation of a shared pointer
+  (lots of time on shared)
+  
+  shared pointer -> container: your object, counter: mutable keyword -> because it needs to change even in const function
+  Q: what is a mutable keyword?
+  when a shared pointer gets constructed, counter goes up
+  when it gets deconstruted, counter goes down
+  and when the counter reaches zero, you delete the node
+  spawning a shared pointer: write up in Google Doc
+  
+  shared_ptr <foo> f (this)
+  this is a raw pointer, f is now managing it
+  shareptr [object]
+  new [object]
+  if you pass by copy, assignment operator, or a member function, counter goes up
+  constructing a brand new shared-ptr from a raw-ptr does not increment the counter
+  raw pointer does not know that they are being managed by a smart-ptr
+  
+  shared_ptr <int> a = make_shared <int> (3); //constructed a shared pointer to 3
+  shared_ptr <int> b (&(*a));
+    b and a do not have idea that the other exists
+    b does not know that a exists
+  
+  cycle problem:
+  class Foo {
+  public:
+    std::shared_ptr <foo> p;
+  };
+  
+  std::shared_ptr <foo> a = make_shared (foo);
+  a.p - b;
+  b.p = a;
+  only way b goes out of scope is a goes out of scope, and only way a goes out of scope is b goes out of scope
+  self-referential - cycle
+  never goes out of scope
+  
+with containers, modifying underlying object can and all breaks iterators
+if the iterator modifies value, it will modify value but it will not modify structure
+  auto it = std::make_unique (v.begin(), v.end())
+  will return an iterator to one past end of unique values
+  does not reduce the size of the container, just reorder the element
+  reordering the element does not invalidate the iterator
+  do not change the object that you are iterating on on this type of code
+
+last final:
+6-8 questions on bind
+what is the result of this bind
+
+move constructor
+copy and swap interacting with move constructor
+  value category not showed up
+
+template <typename Iter>
+Iter bah (Iter begin, Iter end) {
+  while (begin != end)
+    ++begin; --begin; begin++; ----> begin++; //two increments give you bad code cause go past the end
+} //reduce the iterator codes
+
+Q: templating for policy with iterator - reduction
+Q: mergesort done with iterator - replace stuff with iterators
+
+template <typename T, typename FUNC>
+void doathing (std::vector <T>& v, _______________________)
+______: const Func& func = FUNC(); (recommended) , Func& fun;, Func fun = Func();
+  
+  d
+  
+  
