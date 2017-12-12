@@ -192,6 +192,38 @@ definition of PlayerList via typedef is not necessary, but it makes it easy to c
 
 Topic: Iterators from pointers
   pointers are legal iterators
+
+std::back_inserter:
+  inserts new elements at the end of x
+  special type of output iterator designed to allow algorithms that usually overwrite elements
+  (such as copy) to instead insert new elements automatically at the end of the container
+  
+  type of x needs ot have a push_back member function 
+  back_inserter (Container& x)
+  
+  ex) 
+  std::vector <int> foo, bar;
+  foo contains  1 2 3 4 5, bar contains 6 7 8 9 10
+  std::copy (bar.begin(), bar.end(), back_inserter (foo));
+  foo now contains: 1 ~ 10
+  
+  
+  list<int> l2(l);
+	copy(l.rbegin(), l.rend(), l2.begin());
+	cout << "\nIn l2: ";
+	print(l2.begin(), l2.end()); //in reverse order of l
+
+	// Another reverse copy... 
+	copy(l.begin(), l.end(), v.rbegin());
+	cout << "\nAfter reversing v: ";
+	print(v.begin(), v.end()); //v in reverse order
+
+Reverse iterator:
+  iterate backward - increasing them moves them towards the beginning of the container
+  rbegin(): return reverse iterator to reverse beginning - point to the last element in the vector
+    not one pass the last element
+  rend(): return reverser iterator pointing to the first element
+  
   
 
  
