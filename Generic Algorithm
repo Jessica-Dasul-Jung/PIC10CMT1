@@ -57,6 +57,19 @@ Topic: Numeric algorithms
 
   predicate cmp: two parameters
     true if second param is bigger than the first one
+  
+  template <typename ForwardIt, class Compare = std::less<T>>
+  ForwardIt min_element (ForwardIt first, ForwardIt last, Compare comp) {
+    if (first == last) return last;
+    ForwardIt smallest = first;
+    ++first;
+    for (; first != last; ++first)
+      if (comp (*first, *smallest))
+        smallest = first;
+    
+    return smallest;
+  }
+  
 
   Ex)
   class CMP {
@@ -70,7 +83,8 @@ Topic: Numeric algorithms
   if ( iter != data.end() )
     cout << "The 'maximum' is " <<  *iter << ".";
 
-2. accumulate
+2. std::accumulate
+  single pass algorithm that does not require saving (hence input iterator fine)
   adds up the values in a given range
   Ex)
   T accumulate( InputIterator begin, InputIterator end, T initialValue 
@@ -78,6 +92,12 @@ Topic: Numeric algorithms
 BinaryOperation overloads operator() with two parameters. 
   1st param: accumulated value
   2nd param: value to be added to the accumulated one
+  
+  T accumulate (Input first, Input last, T init, BinaryOperation op) {
+    for (;first != last; ++first)
+      init = op (init, *first);
+    return init;
+  }
 
 cout << accumulate( v.begin(), v.end(), 0 ) << "."; //v = ints
 
@@ -101,7 +121,8 @@ cout << "The mystery accumulated value is: "
 
 Topic: Copying algorithms
 
-
+std::copy:
+  needs both input iterator to read data, output iterators to write the data
 OutputIterator copy( InputIterator begin1, InputIterator end1, OutputIterator begin2 );
   copies the elements in [begin1, end1) to the output iterator
   
@@ -140,49 +161,29 @@ Topic 4: Sorting algorithms
   cout << "Average: "  << accumulate( v.begin() + 4, v.end(), 0 ) / (v.size() - 3.0);
 
 
-Final remarks
-To illustrate the point, consider the case where we need to print the elements of a container (say a vector) 
-to the console using the generic algorithm for_each. 
-In this case, we need a helper function and/or functor to handle the indiviual elements. 
-Before the C++11 standards were fully supported the easiest way to handle this track was to
-i. scroll to the top of the document to declare the helper; i. 
-then define the body somewhere in the document; and finally i. write an elegant line of code back where it was needed.
-For example, assuming v is a vector of printable types, we could code
-// Libraries and precompiler directives
-...
-
-// Definitions
-template <typename ItemType>         // assume ItemType can be 'printed'
-void print_it( const ItemType& x );
-...
-
-// Declarations (optional)
-template <typename ItemType> 
-void print_it( const ItemType& x ){
+Lambda function:
+  instead of:
+  template <typename ItemType>
+  void print_it (const ItemType& x) {
     std::cout << x << ' ';
-}
+  }
+  for_each (v.begin(), v.end(), print_it);
 
-    ...
-    // Here we print the `int` vector ...
-    for_each( v.begin(), v.end(), print_it );
-    ...
-Whoa! That is a lot of code needed to be able to write the elegant for_each statement. 
-However, if we want to use a separator other than a blank space, we have to scroll up and/or down, 
-and then change the code. 
-Truth is, some programmers would rather write custom loops than being subject to this nighmare. 
-Lucky for us, a lambda function does the same without all the extra code:
-    ...
-    // Here we print the `int` vector
-    for_each( v.begin(), v.end(), []( int x ){ std::cout << x << ' '; } );
-    ...
-If for some reason we need to change the separator, we can do it in-place. Nice!
-Just remember, if you are using generic algorithms without lambda functions, very likely you are not taking full advantage of the standard template library.
-Included f
+  lambda function:
+  for_each (v.begin(), v.end(), [](int x) { std::cout << x << ' '; }
 
 std::copy_backwards
   copies the elements from the range, defined by [first, last) to another range ending at d_last
   the elements are copied in reverse order 
   because the decrement operator is expected, bidirectional iterators are needed
+  
+  template <typename Bidirit1, typename BidirIt2>
+  BidirIt2 copy_backward (Bidirit1 first, BidirIt last, BidirIt2 d_last) {
+    while (first != last)
+      *(--d_last) = (*--last);
+    return d_last;
+  }
+  
   
   template <typename BidirIt1, typename BidirIt2>
   BidirIt2 copy_backward (BidirIt1 first, BidirIt1 last, BidirIt2 d_last) {
@@ -193,10 +194,3 @@ std::copy_backwards
 
 std::random_shuffle (deprecated)
   random access iterator
-  
-d
-d
-d
-d
-
-d
