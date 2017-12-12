@@ -1,26 +1,57 @@
 
 lambda function:
   defines an anonymous function objcet
+  function that you can write inline (within any function)
+  ability to capture objects that belong to the same scope
+  
+  Syntax:
+  [capture-list] (params) exception attribute -> ret { body }
 
 []() {}(); //simple example
-
 
 []  // The 'lambda introducer' (it specifies the type of 'capture')
 ()  // The 'lambda declarator' (it is used to declare the parameters)
 {}  // The body of the function (it [usually] does not require a return)
 ()  // Acts like a call to operator() 
 
-	int n = 10;
-	double x;
-	auto fun = [=, &x](double d, int k) {
-		cout << "d = " << (x = d) << ", k = " << k << '\n';
-		return x += d;
-	};
+#include <iostream>
+int main () {
+	auto lambda_fun = []() { std::cout << "Hello\n"; }
+		//creating a lambda function and storing it into lambda_fun	
+}
 
-	fun(0, n);
-	cout << "x = " << x << '\n';
+int n = 10;
+double x;
+auto fun = [=, &x] (double d, int k) {
+	cout << "d = " << (x = d) << ", k = " << k << '\n';
+	return x += d;
+};
+fun(0, n);
+cout << "x = " << x << '\n';
 
-d
+auto fun = []() { std::cout << "Hello, Lambda-World 1!\n"; };
+fun();
+auto fun2 = [] { std::cout << "Hello, Lambda-World 2!\n"; }; //no params () can be omitted
+fun2();
+auto fun3 = [](void) { std::cout << "Hello, Lambda-World 3!\n"; }; // no params (void)
+fun3();
+auto fun4 = [](void) -> void { std::cout << "Hello, Lambda-World 4!\n"; }; //return type void
+fun4();
+auto fun_n = [](int n) {std::cout << "Hello, Lambda-World " << n << "!\n"; };
+fun_n(5);
+fun_n(6);
+fun_n(7);
+
+auto addNumbers = [](int a, int b) { return a + b; };
+int x = 3;
+int y = 5;
+std::cout << "The sum of " << x << "+" << y << " is " << addNumbers(x, y) << "\n"; 
+	//we don't have to declare it before we use it
+
+std::cout << "The product " << x << "*" << y << " is " << [](int a, int b) { return a*b; };
+// Oops?! We've seen this before - DOESNT WORK (QUESTION BRENT)
+
+
 d
 d
 d
