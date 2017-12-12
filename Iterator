@@ -1,0 +1,202 @@
+
+Iterator:
+  any object that, pointing to some range of elements, has the ability to iterateo through the elements of that range
+  using a set of operators 
+  raw pointer: does qualify as an iterator if your definition of object include a primitive type
+  
+  given a container, let it be standard or home-made, we can always add a layer of abstraction to raw pointers so that
+  they know how to travel through the container
+  
+  namespace PIC10C {
+    template <typename Iterator>
+    void double_entries (Iterator start, Iterator stop) {
+      while (start != stop) {
+        *start = *start + *start;
+        ++start;
+      }
+      return;      
+    }
+  }
+  
+  do not pass a container to a function, pass a range instead
+  
+  returning a container should be avoided (even with pointers and reference):
+  return by value: calls for a copy of the container to be returned
+  
+  template type cannot be deducted from a returned object - so smart pointers cannot solve the issue 
+  
+  template <typename Iterator>
+  Iterator find_special (Iterator start, Iterator stop) {
+    while (start != stop) {
+      if (is_special (*start)) return start;
+      ++start;
+    }
+    return stop;    
+  }
+  
+  std::vector <int> v;
+  vector <int> iterator::iter = find_special (v.begin(), v.end());
+  while (iter != v.end())
+  {
+    iter = find_special (++iter, v.end());
+  }
+  
+  //collects the special items:
+  template <typename Iterator>
+  void find_special (Iterator start, Iterator stop, Iterator iter) {
+    while (start != stop) {
+      if (is_special (*start)) {
+        *iter = *start;
+        ++iter;
+      }
+      ++start;
+    }
+    return;
+  }
+  
+  summary: to make our code more generic, we should pass an insertion point (iterator).
+  *iter++ = iter is moved foreward and an iterator pointing to the old location is the one that is dereferenced
+  algorithm assumes that there is enough room for iter to advance (ideally, the container on the receiving end should be
+  at least as big as teh container associated to start and stop)
+  
+  
+Topic: Inserter
+  ex) could pass an iterator associated with empty container and we could use push/insert function to collect the special items
+  speical type of iterator that can grow its associated container
+  
+  differ from regular iterator
+  they behave when the dereference operator [operator*()] is called: instead of returning a refernece to the pointed to jbect
+  they call an insert-like type of function (eg. push_back, push_front, or insert)
+  
+  only available for containers that provide these member functions
+  disadvantage: they can write, but they cannot read
+    *iter = some_value = some_container::insert (some_value)
+    cout << *iter : does not make sense (void is the return type of insert-like functions)
+ 
+ Topic: Iterator category: Input iterator
+  limited, cannot store data
+  - ++iter, iter++ to increment it
+  - *iter: dereference it
+  - operator==, operator!= to compare it to another iterator
+  
+  all STL containers can return at least this level of iterator.
+  ex) std::list <int> l; //int is populated later
+  ...
+  std::list <int>::iterator it;
+  for (it = l.begin(); it != l.end(); ++it)
+    std::cout << (*it) << std::endl;
+ 
+ cannot be used for write/modify operations
+ ex) *it = 2017 is not valid (compare this to inserter)
+ 
+ Topic: Iterator category: Output iterator:
+  can be used in sequential output oeprations
+  each element is written a value only once and then the iterator is incremented
+  opposite of input iterator: they can store data but cannot read it
+  
+  - ++iter, iter++ to increment it
+  - *iter to store data in the location pointed to
+  
+  only for storing
+  cannot use == and !=, cannot read from it
+  
+  subcategories:
+  - inserter
+  - ostream iterators
+  
+  ostream iterators: point to an output stream and insert elements into it
+    std::ostream_iterator<int> out_iter (std::cout, '\n');
+    std::copy (l.begin(), l.end(), out_iter);
+      result in the contents of the list being displayed to the console, one entry per row
+      
+ former (input) case, the contents of l are read via tthe iterator then sent to std::cout, whereas in teh latter case,
+ the interator is associated to std::cout and it is used to write the contents of l to the console.
+ 
+ std::copy use two sets of iterator: one pair of input and one output iterator:
+ possible implementation:
+ template <typename inputit, typename outputit>
+ outputit copy (inputit start, inputit end, outputit target_start) {
+  while (start != stop)
+    *target_start++ = *start++;
+  return target_start;
+ }
+ 
+ istream iterator: complement of ostream
+  input iterator
+  ex) read integers from the console (std::cin) and insert them into l in the reverse order
+  std::coopy (std::istream_iterator <int> (std::cin), std::istream_iterator <int> (), front_inserter(l));
+    //second arg calls a special constructor that creates a pointer to the end of the input
+  
+  Topic: Iterator category: Forward iterator:
+    used to access the sequence of elements in a range in the direction that goes from its beginning towards its end
+    all the functionality of an input iterator, and if they are not constant iterators, also the functionality of an output iterator
+    also support saving and reusing (multipass) 
+    all stl containers support at least forward iterator types
+    
+    ex) works for forward iterator but fails for single-pass iterators (input or output) as they do not support backing up and
+    starting over:
+    iter_saved = iter;
+    iter++;
+    std::cout << "The previous element is " << (*iter_saved) << ", the current element is " << (*iter) << std::endl;
+    
+    a iterator that has been stored is only valid if the underlying container is not modified. 
+    If elements are inserted, or if the container is changed, the saved iterator will have undefined behavior
+    
+ Topic: Bidirectional iterator:
+  can be used to access the sequence of elements in a range of both directions (towards the end and towards the beginning)
+  all the functionality of forward iterators
+  
+  - all forward iterator operations
+  - --iter and iter-- to decrement it
+  
+ Topic: Random access iterators
+  can be used to access elements at an arbitrary offset position relative to the element they point to, offering the same
+  functionality as pointers
+  all the functionality of bidirectional iterators
+  
+  - all bidrectional iterator operations
+  - standard pointer arithmetic: iter1 + n, iter1 - n, iter1 += n, iter1 -= n, iter1 - iter2
+      but not iter1 + iter1 (QUESTION BRENT)
+  - offset dereference operator (operator[](int) as in ier1[n]), and 
+  - all comparisons: iter1 > iter2, iter1 < iter2, iter1 >= iter2, and iter1 <= iter2
+  
+ other types: const_iterator, reverse_iterator
+ 
+ Iterators from member containers:
+ 
+ class MLB {
+  private:
+    typedef vector <Pelotero> PlayerList;
+    PlayerList roster;
+  public:
+    typedef PlayerList::iterator iterator;
+    typedef PlayerList::const_iterator const_iterator;
+    
+    iterator begin() { return roster.begin(); }
+    iterator end() { return roster.end(); }
+    //other members
+ };
+ delegation: ask the perfectly well defined and capable real iterators to do the job for us
+  simply letting the compiler know that they will be our types of iterator
+  
+ range-based loop works just fine:
+ MLB LA;
+ for (auto iter = LA.begin(); iter != LA.end(); ++iter)
+  cout << *iter;
+
+since iterator returns perfectly valid and capable std::vector iterators which know how to perform operations like
+++iter and iter++, no issue (QUESTION BRENT)
+
+definition of PlayerList via typedef is not necessary, but it makes it easy to change containers with just one line change
+  ex) from vector to list
+
+Topic: Iterators from pointers
+  pointers are legal iterators
+  
+
+ 
+ d
+ d
+ d
+ d
+  
