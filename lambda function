@@ -52,6 +52,38 @@ std::cout << "The product " << x << "*" << y << " is " << [](int a, int b) { ret
 // Oops?! We've seen this before - DOESNT WORK (QUESTION BRENT)
 
 
+[a, &b] where a is captured by copy and b is captured by reference
+[this] captures the current object (*this) by reference
+[&] captures all automatic variables used in the body of the lambda by reference and current object
+	by reference if exists
+[=] captures all automatic variables used in the body of the lambda by copy and current object
+	by reference if exists
+
+
+auto print_int = [](int a) { cout << a << " "; };
+for_each(v.begin(), v.end(), print_int);
+
+custom separator:
+for_each(l2.begin(), l2.end(), [=](int a) { cout << a << input; }); //capture by value
+	//9-3-4-3-1
+for_each(v.rbegin(), v.rend(), [&](int a) { cout << a << input; input += "-"; });
+	//9-3--4---3----1-----
+for_each(v.begin(), v.end(), [=](int a) { cout << a << input; });
+	//9-----3-----4-----3-----1----
+	
+WRONG: 	for_each(v.begin(), v.end(), [=](int a) { cout << a << input; input += "-"; });
+	//input cannot be concanated since captured by value
+	//compiler error
+	
+
+
+
+
+
+
+
+ㄴ
+
 d
 d
 d
