@@ -1,0 +1,95 @@
+garbage collector: 
+  release memory that is no longer being used
+  LISP
+
+smart pointer: #include <memory>
+  unique_ptr <T>
+  shared_ptr <T>
+  weak_ptr <T>
+
+one needs to program by convention (RAII idiom) to get all of the benefits they provide
+
+concepts behind smart pointer:
+  template class - template type corresponds to the type of the pointed to object
+    private: pointer of that type
+  overloaded operator: allos the pointer to behave like a real pointer
+    operator*(), operator->()
+  access: to internal pointer if needed
+ 
+Smart-point:
+  via strict ownership: only one pointer can own the object at a time
+  copy constrcutor and assignmenr operator are disabled to prevent multiple owners
+    of the same object
+  
+  strct_ownrshp_ptr <T> p (q)
+  existing_strct_ptr = some_other_strct_ptr
+    call the move constructor and the move assignment operator, respectively
+  
+  via [an intrusive] reference count:
+  it works via inheritance from a class that accompanies the SmartPtr template
+  when created, each object gets a zero reference count
+    every other pointer that points to the object increments the reference count
+    when a pointer is destroyed (or redirected), it decrements the reference count
+    when the reference count reaches (or manually set to) zero, the SmartPtr deletes the object it is pointing to
+  
+  via [a nonintrusive] reference count
+  it works via a separate template class
+    Objects are created with a call to new in the constructor of the pointer
+    corresponds to shared_ptr <T> in <memory>
+  
+  another way to implement a smart pointer is via an internal linked list
+  
+ 
+ Summary of [home-made] SmartPtr:
+ our smartPtr class allows us to:
+  default construct, construct from a raw pointer
+  convert between SmartPtr types (if the conversion of raw pointers is legal, ex) upcast)
+  
+    SmartPtr (T* regularPtr = nullptr);
+    SmartPtr (const SmartPtr<T>& b);
+    template <typename S>
+    SmartPtr (const SmartPtr <S>& b);
+ 
+ assign from another SmartPtr of the same type
+ for safety purpose, we cannot assign from a raw pointer
+    SmartPtr<T>& operator= (const SmartPtr <T>& rhs);
+ 
+ SmartPtr points to nothing: void reset();
+ 
+ T& operator*() const;
+ T* operator->() const;
+ T* get() const;
+ operator bool() const; //true if managed object exists
+ 
+ access the [member] object reference count:
+  unsigned int ReferenceCountedObject::get_reference_count() const;
+ 
+ comparison operators: ==, !=, <
+ 
+ convert to aonther legal type or apply a dynamic cast
+  template <typename FROM_T, typename TO_T>
+  SmartPtr <TO_T> static_SmartPtr_cast (const SmartPtr<FROM_T>& smartP_from);
+  
+  template <typename FROM_T, typename TO_T>
+  SmartPtr <TO_T> dynamic_SmartPtr_cast (const SmartPtr <FROM_T>& smartP_from);
+  
+ 
+ conversion from a raw pointer to a Smartptr is not allowed
+ when the smartptr goes out of scope it should reflect the fact that thereis one less 
+ reference to the original object
+ 
+ 
+  
+    
+    
+    
+    
+    
+  
+d
+d
+d
+d
+d
+d
+
