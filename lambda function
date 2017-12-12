@@ -7,7 +7,39 @@ lambda function:
   Syntax:
   [capture-list] (params) exception attribute -> ret { body }
 
+no return statement: return type is assumed to be void
+
+Compiler cannot figure out the return type:
+std::cout << "This lambda function returns" << 
+	[] (double a, double b) -> int { return a/b; } (4, 3) << std::endl;
+performed a conversoin, tell the compiler that an int is needed 
+
+ability to store info about variables in the local block scope where the lambda function
+is created.
+can refer to these variables using the same name as in the surrounding scope
+can capture other variables - though function
+
+void some_fun(){
+    int outside_int = 3;
+    double outside_double = 0.14;
+    [outside_int, outside_double](){
+        int inside_int = 2017;
+        std::cout << "In " << inside_int << ", pi's value is "
+                  << outside_int + outside_double << ".\n";
+    }();
+    // [inside_int](){ std::cout << "'inside_int' not visible here\n"; }();
+}
+
+lambda function is implemented like a function object (functor)
+- compiler replaces it with coe that declares, creates and initializes and then calls a funciton object
+	captured vars in member fields
+
 []() {}(); //simple example
+
+without using reference, you want the lambda to modify the captured value 
+inside the lambda function, you need to declare the lambda as mutable:
+	[captured_var]() mutable {}
+
 
 []  // The 'lambda introducer' (it specifies the type of 'capture')
 ()  // The 'lambda declarator' (it is used to declare the parameters)
@@ -74,6 +106,14 @@ for_each(v.begin(), v.end(), [=](int a) { cout << a << input; });
 WRONG: 	for_each(v.begin(), v.end(), [=](int a) { cout << a << input; input += "-"; });
 	//input cannot be concanated since captured by value
 	//compiler error
+
+int factorial = 1;
+for ( int i = 1 ; i <= 5 ; ++i )
+    [&factorial]( int x ){ factorial *= x; }(i);
+
+[=]: captures all variables currently in the local block scope by copy of their current values
+[&]: captures all vars currently in the local scope by reference
+
 	
 
 
