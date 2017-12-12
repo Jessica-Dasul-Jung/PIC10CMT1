@@ -106,10 +106,43 @@ Iter bah (Iter begin, Iter end) {
 Q: templating for policy with iterator - reduction
 Q: mergesort done with iterator - replace stuff with iterators
 
-template <typename T, typename FUNC>
+template <typename T, typename COMPARE = std::less<T>>
 void doathing (std::vector <T>& v, _______________________)
-______: const Func& func = FUNC(); (recommended) , Func& fun;, Func fun = Func();
-  
-  d
-  
+______: const COMPARE& func = COMPARE(); (recommended) , Func& fun;, Func fun = Func();
+ 
+when you are implementing this on the test, if the default makes sense, just do his code example
+
+Q: Qt: read some code and draw a picture of what it draws on the screen
+how does Qt obey RAII:
+  bunch of new commands with no paired delete commands
+  memory leak
+  explain how QT manages memory and conform to RAII
+  Qt uses RAII when i pass pointer to the class and memory is managed as if it is initialized it it
+  Q_OBJECT: macro that signals will work
+    parent pointer allows you to climb pointer relationship and use signal and slot with your parents (parent pointer is important
+    in this case)
+    ui pointer - GUI
+    
+Q: RAII: justify try catch in constructor, virtual void dstructor, copy and swap
+
+he believes that students have read his repos
+move semantics, value category - gone
+
+2-3 very short coding sections
+a lot of read this code and figure out what it does
+
+one section write code - this code is broken, please fix it
+conceptual question: TRUE/FALSE
+  type of a lambda function is l
+
+void foo::swap (foo& f){
+  std::swap (*this, f);
+}
+assume std::swap looks like 
+  template <typename T>
+  swap (T& a, T& b) {T c(a); a = b; b = c;}
+swap repeats, infinite cycle
+
+
+
   
